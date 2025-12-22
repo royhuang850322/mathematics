@@ -1,11 +1,17 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, GeneratedPaper, PaperConfig } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// 助手函数：确保获取最新的 AI 实例
+const getAiClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API_KEY 未配置，请在环境变量中设置。");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
-// Using gemini-3-pro-preview for complex mathematical and multimodal analysis tasks
 export const analyzeExamImages = async (base64Images: string[]): Promise<AnalysisResult> => {
+  const ai = getAiClient();
   const model = 'gemini-3-pro-preview';
   
   const imageParts = base64Images.map(base64 => ({
@@ -58,12 +64,11 @@ export const analyzeExamImages = async (base64Images: string[]): Promise<Analysi
     },
   });
 
-  // Use response.text directly as a property
   return JSON.parse(response.text || "{}");
 };
 
-// Using gemini-3-pro-preview for advanced reasoning and content generation
 export const generatePracticePaper = async (weakPoints: string[], config: PaperConfig): Promise<GeneratedPaper> => {
+  const ai = getAiClient();
   const model = 'gemini-3-pro-preview';
   const prompt = `基于以下薄弱知识点：${weakPoints.join('、')}，为一名小学生生成一份强化练习卷。
   练习卷应包含 ${config.count} 道题目，涵盖这些知识点。题目整体难度设定为：${config.difficulty}。题目要具有针对性。`;
@@ -102,6 +107,5 @@ export const generatePracticePaper = async (weakPoints: string[], config: PaperC
     },
   });
 
-  // Use response.text directly as a property
   return JSON.parse(response.text || "{}");
 };
