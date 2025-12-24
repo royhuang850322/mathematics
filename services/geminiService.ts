@@ -1,17 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, GeneratedPaper, PaperConfig } from "../types.ts";
 
-// 助手函数：确保获取最新的 AI client
-const getAiClient = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API_KEY 未配置，请在环境变量中设置。");
-  }
-  return new GoogleGenAI({ apiKey });
-};
-
 export const analyzeExamImages = async (base64Images: string[]): Promise<AnalysisResult> => {
-  const ai = getAiClient();
+  // 严格遵守指令：直接使用 process.env.API_KEY 初始化
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-pro-preview';
   
   const imageParts = base64Images.map(base64 => ({
@@ -67,7 +59,7 @@ export const analyzeExamImages = async (base64Images: string[]): Promise<Analysi
 };
 
 export const generatePracticePaper = async (weakPoints: string[], config: PaperConfig): Promise<GeneratedPaper> => {
-  const ai = getAiClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-pro-preview';
   const prompt = `基于以下薄弱知识点：${weakPoints.join('、')}，为一名小学生生成一份强化练习卷。
   练习卷应包含 ${config.count} 道题目，涵盖这些知识点。题目整体难度设定为：${config.difficulty}。`;
