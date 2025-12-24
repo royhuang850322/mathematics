@@ -1,5 +1,4 @@
-
-import { GeneratedQuestion } from "../types";
+import { GeneratedQuestion } from "../types.ts";
 
 const STORAGE_KEY = "zhixue_question_bank";
 
@@ -8,7 +7,6 @@ export const saveQuestionsToBank = (questions: GeneratedQuestion[]) => {
   const timestamp = Date.now();
   const newQuestions = questions.map(q => ({ ...q, timestamp }));
   
-  // Combine and remove duplicates based on question text (simplified)
   const combined = [...newQuestions, ...existing];
   const unique = combined.filter((q, index, self) =>
     index === self.findIndex((t) => t.question === q.question)

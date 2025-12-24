@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { AnalysisResult, GeneratedPaper, PaperConfig } from "../types";
+import { AnalysisResult, GeneratedPaper, PaperConfig } from "../types.ts";
 
-// 助手函数：确保获取最新的 AI 实例
+// 助手函数：确保获取最新的 AI client
 const getAiClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
@@ -45,18 +45,17 @@ export const analyzeExamImages = async (base64Images: string[]): Promise<Analysi
               properties: {
                 id: { type: Type.STRING },
                 originalText: { type: Type.STRING, description: "题目的原始文本" },
-                knowledgePoint: { type: Type.STRING, description: "涉及的具体数学知识点，如：分数乘法、长方形面积、简便运算等" },
+                knowledgePoint: { type: Type.STRING, description: "涉及的具体数学知识点" },
                 difficulty: { type: Type.STRING, enum: ["简单", "中等", "困难"] },
-                analysis: { type: Type.STRING, description: "为什么做错，或者是这道题考察的关键逻辑" },
+                analysis: { type: Type.STRING, description: "错误原因分析" },
               },
               required: ["id", "originalText", "knowledgePoint", "difficulty", "analysis"],
             },
           },
-          overallSummary: { type: Type.STRING, description: "对这份卷子表现的整体评价" },
+          overallSummary: { type: Type.STRING },
           weakPoints: {
             type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "提取出的 3-5 个核心薄弱知识点"
+            items: { type: Type.STRING }
           }
         },
         required: ["wrongQuestions", "overallSummary", "weakPoints"],
@@ -71,7 +70,7 @@ export const generatePracticePaper = async (weakPoints: string[], config: PaperC
   const ai = getAiClient();
   const model = 'gemini-3-pro-preview';
   const prompt = `基于以下薄弱知识点：${weakPoints.join('、')}，为一名小学生生成一份强化练习卷。
-  练习卷应包含 ${config.count} 道题目，涵盖这些知识点。题目整体难度设定为：${config.difficulty}。题目要具有针对性。`;
+  练习卷应包含 ${config.count} 道题目，涵盖这些知识点。题目整体难度设定为：${config.difficulty}。`;
 
   const response = await ai.models.generateContent({
     model,
@@ -89,11 +88,7 @@ export const generatePracticePaper = async (weakPoints: string[], config: PaperC
               properties: {
                 id: { type: Type.STRING },
                 question: { type: Type.STRING },
-                options: { 
-                  type: Type.ARRAY, 
-                  items: { type: Type.STRING },
-                  description: "如果是选择题请提供选项，否则可不提供" 
-                },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
                 answer: { type: Type.STRING },
                 explanation: { type: Type.STRING },
                 knowledgePoint: { type: Type.STRING },
